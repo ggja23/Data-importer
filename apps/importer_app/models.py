@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import date
 
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -8,16 +9,16 @@ from .choices import *
 
 class Person(models.Model):
     """
-    Person class model
+    Abstract class : Person model
     """
 
-    first_name = models.CharField(name='First name', max_length=100, null=False)
-    last_name = models.CharField(name='Last name', max_length=100, null=False)
-    id_number = models.PositiveIntegerField(name='Id number', validators=[MaxValueValidator(9999999999999)], null=False)
-    birthdate = models.DateField(name='Birthdate')
-    email = models.EmailField(name='Email')
-    phone = models.PositiveIntegerField(name='Phone', validators=[MaxValueValidator(999999999999999)])
-    gender = models.CharField(name='Gender', choices=GENDER, max_length=1, null=False)
+    first_name = models.CharField('First name', max_length=100, null=False)
+    last_name = models.CharField('Last name', max_length=100, null=False)
+    id_number = models.PositiveIntegerField('Id number', validators=[MaxValueValidator(9999999999999)], null=False)
+    birthdate = models.DateField('Birthdate', validators=[MaxValueValidator(limit_value=date.today)], null=True)
+    email = models.EmailField('Email', blank=True)
+    phone = models.PositiveIntegerField('Phone', validators=[MaxValueValidator(999999999999999)], blank=True, null=True)
+    gender = models.CharField('Gender', choices=GENDER, max_length=1, null=False)
 
     class Meta:
         abstract = True
@@ -32,10 +33,11 @@ class Student(Person):
     Student class model
     """
 
-    department = models.CharField(name='Department', max_length=50)
-    date_of_admission = models.DateField(name='Date of admission')
-    grades_average = models.PositiveIntegerField(name='Grades average', validators=[MaxValueValidator(100)])
+    department = models.CharField('Department', max_length=50, blank=True)
+    date_of_admission = models.DateField('Date of admission', null=True, blank=True)
+    grades_average = models.PositiveIntegerField('Grades average', validators=[MaxValueValidator(100)], blank=True, null=True)
 
+    # TODO: compute grades_average
     class Meta:
         verbose_name = "Student"
         verbose_name_plural = "Students"
@@ -46,28 +48,29 @@ class Teacher(Person):
     Teacher class model
     """
 
-    profession = models.CharField(name='Profession', max_length=100)
-    years_of_experience = models.PositiveIntegerField(name='Years of experience', validators=[MaxValueValidator(100)])
-    department = models.CharField(name='Department', max_length=100)
-    institute = models.CharField(name='Institute', max_length=150)
-    date_of_hire = models.DateField(name='Date of hire')
+    profession = models.CharField('Profession', max_length=100, blank=True, null=True)
+    years_of_experience = models.PositiveIntegerField('Years of experience', validators=[MaxValueValidator(100)], blank=True, null=True)
+    department = models.CharField('Department', max_length=100, blank=True)
+    institute = models.CharField('Institute', max_length=150, blank=True)
+    date_of_hire = models.DateField('Date of hire', null=True, blank=True)
 
     class Meta:
         verbose_name = "Teacher"
         verbose_name_plural = "Teachers"
+        abstract = False
 
 
 class Course(models.Model):
     """
     Course class model
     """
-    name = models.CharField(name='Name', max_length=100, null=False)
-    department = models.CharField(name='Department', max_length=100)
-    academic_credits = models.PositiveIntegerField(name='Academic credits', validators=[MaxValueValidator(100)])
-    start_date = models.DateField(name='Start date')
-    end_date = models.DateField(name='End date')
-    teacher_id = models.ForeignKey(Teacher, on_delete=models.PROTECT)
-    student_ids = models.ManyToManyField(Student)
+    name = models.CharField('Name', max_length=100, null=False)
+    department = models.CharField('Department', max_length=100, blank=True)
+    academic_credits = models.PositiveIntegerField('Academic credits', validators=[MaxValueValidator(100)])
+    start_date = models.DateField('Start date', blank=True, null=True)
+    end_date = models.DateField('End date', blank=True, null=True)
+    teacher_id = models.ForeignKey(Teacher, on_delete=models.PROTECT, blank=True, null=True)
+    student_ids = models.ManyToManyField(Student, blank=True)
 
     # TODO: validation start date < end_date
     class Meta:
@@ -83,10 +86,10 @@ class Grade(models.Model):
     Grade class model
     """
 
-    score = models.PositiveIntegerField(name='Score', validators=[MaxValueValidator(100)])
-    date = models.DateField(name='Date')
-    student_ids = models.ManyToManyField(Student)
-    course_ids = models.ManyToManyField(Course)
+    score = models.PositiveIntegerField('Score', validators=[MaxValueValidator(100)], null=False)
+    course_id = models.ForeignKey(Course, on_delete=models.PROTECT, null=False)
+    date = models.DateField("Date", auto_now_add=True)
+    student_ids = models.ManyToManyField(Student, blank=True)
 
     # TODO: score validation < 100 or < 10
 
@@ -95,6 +98,11 @@ class Grade(models.Model):
         verbose_name_plural = "Grades"
 
     def __str__(self):
+        return "{}".format(self.score)
         return self.score
 
-
+# class GradeCourse(models.Model):
+#     """
+#     Intermediate model to relate the Note with the Course of each student
+#     """
+#     grade_id = models.ForeignKey(Grade, on_delete=models.PROTECT, null=False)

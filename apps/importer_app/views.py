@@ -1,16 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from io import BytesIO
-import time
 import pandas as pd
 
 from django.shortcuts import render
-
-# from tablib import Dataset
-from .admin import StudentResource
-
 from .models import *
-
 
 from django.views import View
 from django.http import HttpResponse
@@ -32,14 +26,21 @@ class ImporterView(View):
         self.type_input_file = None
         self.file = None
         self.df = pd.DataFrame()
-        self.list_unique_model_fields = []     # fields that must be unique in the model
-        self.list_non_null_model_fields = []   # fields that cannot be null in the model
+        self.list_unique_model_fields = []  # fields that must be unique in the model
+        self.list_non_null_model_fields = []  # fields that cannot be null in the model
         self.row_with_null_values = None
-        self.df_with_nulls = None         # Dataframe wint invalid values
-
-
+        self.df_with_no_nulls = None  # Dataframe without invalid values
+        self.df_with_uniques_value = None  # Dataframe with no duplicate values violating the unique
+        # constraint
+        self.number_wrong_rows = None  # rows with null or blank, where the model requires a value
+        self.number_invalids_rows = None  # rows with all required fields, but one or more does not
+        # meet the type or validation defined in the mode
+        self.number_rows_violates_unique_constraint = None
         pandas_comand = {
         }
+
+    # TODO: definir estrtuctura dataframe para cada modelo.
+    # TODO : validar la cantidad de header
 
     def get(self, request):
         return render(request, self.template_name)
@@ -56,16 +57,12 @@ class ImporterView(View):
                 self.importer_choices[self.selected_importer]()
                 self.file = request_file[self.selected_importer].read()
                 self.type_input_file = request_file[self.selected_importer].content_type
+
                 self.create_dataframe_from_file(request)
-                self.compute_null_fields()
+                self.compute_row_with_no_null_values()
+                self.compute_rows_with_unique_constraint_in_model()
 
-
-
-                #TODO: df validation
-                #blank , null , unique
-
-                #TODO: instance clean
-
+                # TODO: instance clean
 
         return render(request, self.template_name)
 
@@ -96,102 +93,39 @@ class ImporterView(View):
             except AttributeError:
                 pass
 
-    def compute_row_with_null_values(self):
-        """
-        Calculate all rows that have a null value and are defined as not null by the model
-        """
-        self.df_with_nulls = self.df.copy().dropna(subset=self.list_non_null_model_fields)
+        if 'id' in self.list_non_null_model_fields:
+            # Remove the 'id' field, because the imported template may not contain the field
+            self.list_non_null_model_fields.remove('id')
 
+    def compute_row_with_no_null_values(self):
+        """
+        Compute all rows that have a null value and are defined as not null by the model
+        """
+        self.df_with_no_nulls = self.df.dropna(subset=self.list_non_null_model_fields, inplace=False)
+        number_rows_df = self.df.shape[0]
+        number_rows_df_sanitized = self.df_with_no_nulls.shape[0]
+        self.number_wrong_rows = abs(number_rows_df - number_rows_df_sanitized)
+
+    def compute_rows_with_unique_constraint_in_model(self):
+        """
+         Compute all  dataframes rows  with values that violate unique constraint
+        """
+        self.df_with_uniques_value = self.df.drop_duplicates(subset=self.list_unique_model_fields, keep='first')
+        quantity_rows_df1 = self.df_with_uniques_value.shape[0]
+        quantity_rows_df2 = self.df_with_uniques_value.shape[0]
+        self.number_rows_violates_unique_constraint = abs(quantity_rows_df1 - quantity_rows_df2)
 
     def students_importer(self):
         student_validation_fields = self.validate_field_in_model(Student)
 
     def teachers_importer(self):
-        # teacher_validation_fields = self.validate_field_in_model(Teacher)
-        pass
+        teacher_validation_fields = self.validate_field_in_model(Teacher)
 
     def grades_importer(self):
-        # grade_validation_fields = self.validate_field_in_model(Grade)
-        pass
+        grade_validation_fields = self.validate_field_in_model(Grade)
 
 
-# TODO:
-
-def compute_row_errors():
-    pass
 
 
-def compute_invalid_error():
-    pass
 
 
-def clean_data_duplicate():
-    pass
-
-
-def identify_extension(file):
-    pass
-
-
-empty_rows = 0
-
-
-def validate_field_in_model(model):
-    """
-    Validate all fields no_null , no_blank and uniques in model
-    """
-    fields = model._meta.get_fields()
-    validation_fields = {'uniques': [], 'no_null': []}
-
-    for field in fields:
-        try:
-            if not field.null or not field.blank:
-                validation_fields['no_null'].append(field.name)
-            if field.unique:
-                validation_fields['uniques'].append(field.name)
-            # type_field = field.get_internal_type()
-            # result[field_name] = type_field
-        except AttributeError:
-            pass
-
-    return validation_fields
-
-
-def student_importer():
-    student_validation_fields = validate_field_in_model(Student)
-    pass
-
-
-def simple_upload(request):
-    if request.method == 'POST':
-        # person_resource = StudentResource()
-        # dataset = Dataset()
-
-        request_file = request.FILES['myfile']
-        # TODO: identifi the extension
-        student_importer()
-        # if request.parse_file_upload():
-        #     pass
-
-        # identify_extension()
-
-        file = request_file.read()
-
-    return render(request, 'import.html')
-
-
-def simple_upload22(request):
-    if request.method == 'POST':
-        person_resource = StudentResource()
-        dataset = Dataset()
-
-        new_persons = request.FILES['myfile']
-
-        imported_data = dataset.load(new_persons.read())
-        result = person_resource.import_data(dataset, dry_run=False)  # Test the data import
-        row_with_errors = [error[0] for error in result.row_errors() if result.row_errors()]
-        if not result.has_errors():
-            pass
-        person_resource.import_data(dataset, dry_run=False)  # Actually import now
-
-    return render(request, 'import.html')

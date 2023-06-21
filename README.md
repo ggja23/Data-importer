@@ -16,7 +16,7 @@ ASYNC - IMPORTER APP written in Django
    3. ``` virtualenv data_importer_env ```
    4.  ``` source data_importer_env/bin/activate ```
    5. ``` pip install -r requirements.txt ```
-3. create a file called ".env" with the SECRET_KEY variable with a different value than what is shown in the example file
+3. create a file called ".env" with the SECRET_KEY variable with a different value than what is shown in the example file .env_example
  ```
    python manage.py makemigrations
    python manage.py migrate   

@@ -1,7 +1,7 @@
 from django.contrib import admin
+from import_export.admin import ImportExportModelAdmin
 
-from .models import Student, Teacher, Course, Grade
-
+from .models import *
 
 class CourseInline(admin.TabularInline):
     model = Course
@@ -17,13 +17,6 @@ class GradesInline(admin.TabularInline):
     min_num = 0
 
 
-class StudentAdmin(admin.ModelAdmin):
-    list_display = ['first_name']
-    # filter_horizontal = ('grade_ids',)
-    inlines = [GradesInline]
-
-
-#
 class CourseAdmin(admin.ModelAdmin):
     filter_horizontal = ['student_ids']
 
@@ -31,6 +24,11 @@ class CourseAdmin(admin.ModelAdmin):
 class GradeAdmin(admin.ModelAdmin):
     list_display = ['student_id', 'score', 'course_id', 'date']
     # filter_horizontal = ('student_ids',)
+
+
+class StudentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ['first_name']
+    inlines = [GradesInline]
 
 
 admin.site.register(Student, StudentAdmin)

@@ -1,0 +1,54 @@
+{% extends 'index.html' %}
+
+{% block content %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="students_file">Students</input>
+        <button type="submit">Upload</button>
+        {% if message == 'invalid headers!' and model == 'student' %}
+            <p>Invalid Headers</p>
+            <p> the required headers are:</p>
+            <table style="width:100%">
+                <tr>
+                    {% for column in required_headers %}
+                        <th> {{ column }} </th>
+                    {% endfor %}
+                </tr>
+            </table>
+        {% endif %}
+    </form>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="teachers_file">Teachers</input>
+        <button type="submit">Upload</button>
+        {% if message == 'invalid headers!' and model == 'teacher'  %}
+            <p>Invalid Headers</p>
+            <p> the required headers are:</p>
+            <table style="width:100%">
+                <tr>
+                    {% for column in required_headers %}
+                        <th> {{ column }} </th>
+                    {% endfor %}
+                </tr>
+            </table>
+        {% endif %}
+    </form>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="grades_file">Grades</input>
+        <button type="submit">Upload</button>
+        {% if message == 'invalid headers!' and model == 'grade' %}
+            <p>Invalid Headers</p>
+            <p> the required headers are:</p>
+            <table style="width:100%">
+                <tr>
+                    {% for column in required_headers %}
+                        <th> {{ column }} </th>
+                    {% endfor %}
+                </tr>
+            </table>
+        {% endif %}
+    </form>
+{% endblock %}

@@ -7,6 +7,8 @@ ASYNC - IMPORTER APP written in Django
 * Users : Can import data for models from files with CSV or XLS, XLSX extension.
 * Admin users: Can manage all models from admin panel
 
+## Modeling
+![Descripción de la imagen](importer_modeling.jpeg))
 
 ## Quick Start
 1. Clone this project in your computer.
@@ -22,8 +24,8 @@ ASYNC - IMPORTER APP written in Django
    python manage.py runserver   
    ```
 4. Onpen a browser to    `http://localhost:8000/admin/` to open the admin site
-5. Create a few test objects of each type.
 
 
 
 ## NOTES
+To be continue...

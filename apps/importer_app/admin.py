@@ -1,5 +1,4 @@
 from django.contrib import admin
-from import_export.admin import ImportExportModelAdmin
 
 from .models import *
 
@@ -26,7 +25,7 @@ class GradeAdmin(admin.ModelAdmin):
     # filter_horizontal = ('student_ids',)
 
 
-class StudentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+class StudentAdmin(admin.ModelAdmin):
     list_display = ['first_name']
     inlines = [GradesInline]
 

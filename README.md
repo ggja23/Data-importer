@@ -8,12 +8,6 @@ ASYNC - IMPORTER APP written in Django
 * Admin users: Can manage all models from admin panel
 
 
-# Requeriments
- - Python >= 3.8
- - 
-
-
-
 ## Quick Start
 1. Clone this project in your computer.
 2. Set up The Python development  enviroment.
@@ -27,12 +21,9 @@ ASYNC - IMPORTER APP written in Django
    python manage.py createsuperuser # Create a superuser only, if  necessary
    python manage.py runserver   
    ```
-4. Onpen a browser to    `http://127.0.0.1:8000/admin/` to open the admin site
+4. Onpen a browser to    `http://localhost:8000/admin/` to open the admin site
 5. Create a few test objects of each type.
-1. Open tab to `http://127.0.0.1:8000` to see the main site, with your new objects.
 
 
-## EXTERNAL LIBRARIES
-https://django-import-export.readthedocs.io/en/latest/
 
 ## NOTES
